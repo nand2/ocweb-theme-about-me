@@ -4,16 +4,16 @@ pragma solidity ^0.8.13;
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
-import "../../interfaces/IVersionableWebsite.sol";
-import "../../interfaces/IDecentralizedApp.sol";
+import "ocweb/contracts/src/interfaces/IVersionableWebsite.sol";
+import "ocweb/contracts/src/interfaces/IDecentralizedApp.sol";
 
-contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
-    IDecentralizedApp public adminWebsite;
-    IVersionableWebsitePlugin public injectedVariablesPlugin;
+contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
+    IDecentralizedApp public frontend;
+    IVersionableWebsitePlugin public staticFrontendPlugin;
 
-    constructor(IDecentralizedApp _adminWebsite, IVersionableWebsitePlugin _injectedVariablesPlugin) {
-        adminWebsite = _adminWebsite;
-        injectedVariablesPlugin = _injectedVariablesPlugin;
+    constructor(IDecentralizedApp _frontend, IVersionableWebsitePlugin _staticFrontendPlugin) {
+        frontend = _frontend;
+        staticFrontendPlugin = _staticFrontendPlugin;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
@@ -24,14 +24,14 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
 
     function infos() external view returns (Infos memory) {
         IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](1);
-        dependencies[0] = injectedVariablesPlugin;
+        dependencies[0] = staticFrontendPlugin;
 
         return
             Infos({
-                name: "ocWebAdmin",
+                name: "themeAboutMe",
                 version: "0.1.0",
-                title: "Admin interface",
-                subTitle: "Served at the /admin/ path",
+                title: "Theme About Me",
+                subTitle: "A theme for presenting oneself",
                 author: "nand",
                 homepage: "",
                 dependencies: dependencies,
@@ -58,7 +58,7 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
                 newResource[j - 1] = resource[j];
             }
 
-            (statusCode, body, headers) = adminWebsite.request(newResource, params);
+            (statusCode, body, headers) = frontend.request(newResource, params);
 
             return (statusCode, body, headers);
         }
