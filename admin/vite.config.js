@@ -7,13 +7,14 @@ export default defineConfig({
   build: {
     lib: {
       entry: './src/components/HelloWorld.vue',
-      name: 'HelloWorld',
+      name: 'themeAboutMeAdmin0',
       formats: ['umd'],
       fileName: (format) => `admin.${format}.js`,
     },
     rollupOptions: {
       external: ['vue', '@tanstack/vue-query', '@wagmi/vue'],
       output: {
+        assetFileNames: "admin.[ext]",
         globals: {
           vue: 'Vue',
           '@tanstack/vue-query': 'TanstackVueQuery',

@@ -61,8 +61,8 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
     )
         external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        // Serve the admin plugin : /themes/about-me/[admin.umd.js|style.css] -> /admin/[admin.umd.js|style.css]
-        if (resource.length == 3 && Strings.equal(resource[0], "themes") && Strings.equal(resource[1], "about-me") && (Strings.equal(resource[2], "admin.umd.js") || Strings.equal(resource[2], "style.css"))) {
+        // Serve the admin plugin : /themes/about-me/[admin.umd.js|admin.css] -> /admin/[admin.umd.js|admin.css]
+        if (resource.length == 3 && Strings.equal(resource[0], "themes") && Strings.equal(resource[1], "about-me") && (Strings.equal(resource[2], "admin.umd.js") || Strings.equal(resource[2], "admin.css"))) {
 
             string[] memory newResource = new string[](2);
             newResource[0] = "admin";
