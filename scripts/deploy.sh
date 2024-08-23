@@ -51,7 +51,7 @@ PLUGIN_ROOT=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
 exec 5>&1
 OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
-  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID about-me-the16 | tee >(cat - >&5))"
+  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID about-me-theme | tee >(cat - >&5))"
 
 # Get the address of the OCWebsite
 OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
