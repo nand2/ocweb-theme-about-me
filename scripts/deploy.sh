@@ -2,12 +2,13 @@
 
 set -euo pipefail
 
-# We need private key, RPC URL, chain id, OCWebsite factory address, Static frontend plugin address
+# We need some infos
 PRIVATE_KEY=${PRIVATE_KEY:-}
 RPC_URL=${RPC_URL:-}
 CHAIN_ID=${CHAIN_ID:-}
 OCWEBSITE_FACTORY_ADDRESS=${OCWEBSITE_FACTORY_ADDRESS:-}
 STATIC_FRONTEND_PLUGIN_ADDRESS=${STATIC_FRONTEND_PLUGIN_ADDRESS:-}
+OCWEB_ADMIN_PLUGIN_ADDRESS=${OCWEB_ADMIN_PLUGIN_ADDRESS:-}
 if [ -z "$PRIVATE_KEY" ]; then
   echo "PRIVATE_KEY env var is not set"
   exit 1
@@ -28,6 +29,17 @@ if [ -z "$STATIC_FRONTEND_PLUGIN_ADDRESS" ]; then
   echo "STATIC_FRONTEND_PLUGIN_ADDRESS env var is not set"
   exit 1
 fi
+if [ -z "$OCWEB_ADMIN_PLUGIN_ADDRESS" ]; then
+  echo "OCWEB_ADMIN_PLUGIN_ADDRESS env var is not set"
+  exit 1
+fi
+
+# check that forge is installed
+if ! command -v forge &> /dev/null
+then
+    echo "forge could not be found. Please install foundry (toolkit for Ethereum application development)"
+    exit
+fi
 
 # Compute the plugin root folder (which is the parent folder of this script)
 PLUGIN_ROOT=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
@@ -39,7 +51,7 @@ PLUGIN_ROOT=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
 exec 5>&1
 OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
-  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID about-me-the11 | tee >(cat - >&5))"
+  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID about-me-the15 | tee >(cat - >&5))"
 
 # Get the address of the OCWebsite
 OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
@@ -82,7 +94,7 @@ npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /frontend/ --exclude
 # 
 
 forge create --private-key $PRIVATE_KEY \
---constructor-args $OCWEBSITE_ADDRESS $STATIC_FRONTEND_PLUGIN_ADDRESS \
+--constructor-args $OCWEBSITE_ADDRESS $STATIC_FRONTEND_PLUGIN_ADDRESS $OCWEB_ADMIN_PLUGIN_ADDRESS \
 --rpc-url $RPC_URL \
 src/ThemeAboutMePlugin.sol:ThemeAboutMePlugin
 

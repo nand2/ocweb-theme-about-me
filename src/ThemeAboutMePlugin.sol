@@ -4,16 +4,18 @@ pragma solidity ^0.8.13;
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
-import "ocweb/contracts/src/interfaces/IVersionableWebsite.sol";
-import "ocweb/contracts/src/interfaces/IDecentralizedApp.sol";
+import "ocweb/src/interfaces/IVersionableWebsite.sol";
+import "ocweb/src/interfaces/IDecentralizedApp.sol";
 
 contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
     IDecentralizedApp public frontend;
     IVersionableWebsitePlugin public staticFrontendPlugin;
+    IVersionableWebsitePlugin public ocWebAdminPlugin;
 
-    constructor(IDecentralizedApp _frontend, IVersionableWebsitePlugin _staticFrontendPlugin) {
+    constructor(IDecentralizedApp _frontend, IVersionableWebsitePlugin _staticFrontendPlugin, IVersionableWebsitePlugin _ocWebAdminPlugin) {
         frontend = _frontend;
         staticFrontendPlugin = _staticFrontendPlugin;
+        ocWebAdminPlugin = _ocWebAdminPlugin;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
@@ -26,6 +28,14 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
         IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](1);
         dependencies[0] = staticFrontendPlugin;
 
+        AdminPanel[] memory adminPanels = new AdminPanel[](1);
+        adminPanels[0] = AdminPanel({
+            title: "Theme About Me",
+            url: "/themes/about-me/admin.umd.js",
+            moduleForGlobalAdminPanel: ocWebAdminPlugin,
+            panelType: AdminPanelType.Primary
+        });
+
         return
             Infos({
                 name: "themeAboutMe",
@@ -35,7 +45,7 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
                 author: "nand",
                 homepage: "",
                 dependencies: dependencies,
-                adminPanels: new AdminPanel[](0)
+                adminPanels: adminPanels
             });
     }
 
@@ -51,16 +61,22 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
     )
         external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        if (resource.length >= 1 && Strings.equal(resource[0], "admin")) {
+        // Serve the admin plugin
+        if (resource.length == 3 && Strings.equal(resource[0], "themes") && Strings.equal(resource[1], "about-me") && (Strings.equal(resource[2], "admin.umd.js") || Strings.equal(resource[2], "style.css"))) {
 
-            string[] memory newResource = new string[](resource.length - 1);
-            for(uint j = 1; j < resource.length; j++) {
-                newResource[j - 1] = resource[j];
-            }
+            string[] memory newResource = new string[](2);
+            newResource[0] = "admin";
+            newResource[1] = resource[2];
 
             (statusCode, body, headers) = frontend.request(newResource, params);
 
             return (statusCode, body, headers);
+        }
+
+        // Serve the frontend
+        (uint newStatusCode, string memory newBody, KeyValue[] memory newHeaders) = frontend.request(resource, params);
+        if(newStatusCode == 200) {
+            return (newStatusCode, newBody, newHeaders);
         }
     }
 
