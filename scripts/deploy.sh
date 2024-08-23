@@ -34,7 +34,7 @@ PLUGIN_ROOT=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
 exec 5>&1
 OUTPUT="$(PRIVATE_KEY=$PRIVKEY \
-  ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID about-me-them6 | tee >(cat - >&5))"
+  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID about-me-them7 | tee >(cat - >&5))"
 
 # Get the address of the OCWebsite
 OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
@@ -53,7 +53,7 @@ npm run build
 # Upload the admin frontend
 PRIVATE_KEY=$PRIVKEY \
 WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
-ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /admin/
+npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /admin/
 
 
 #
@@ -69,7 +69,7 @@ npm run build
 # Upload the frontend
 PRIVATE_KEY=$PRIVKEY \
 WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
-ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /frontend/ --exclude 'dist/pages/*' --exclude 'dist/themes/about-me/*'
+npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /frontend/ --exclude 'dist/pages/*' --exclude 'dist/themes/about-me/*'
 
 
 
