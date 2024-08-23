@@ -2,9 +2,9 @@
 pragma solidity ^0.8.13;
 
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 import "../../interfaces/IVersionableWebsite.sol";
-import "../../library/LibStrings.sol";
 import "../../interfaces/IDecentralizedApp.sol";
 
 contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
@@ -51,7 +51,7 @@ contract OCWebAdminPlugin is ERC165, IVersionableWebsitePlugin {
     )
         external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        if (resource.length >= 1 && LibStrings.compare(resource[0], "admin")) {
+        if (resource.length >= 1 && Strings.equal(resource[0], "admin")) {
 
             string[] memory newResource = new string[](resource.length - 1);
             for(uint j = 1; j < resource.length; j++) {
