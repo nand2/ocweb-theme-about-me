@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
-// import { useStaticFrontendPluginClient, useStaticFrontend } from 'ocweb/src/utils/pluginStaticFrontendQueries.js';
+import { useStaticFrontendPluginClient, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/pluginStaticFrontendQueries.js';
 
 const props = defineProps({
   websiteVersion: {
@@ -31,6 +31,8 @@ const props = defineProps({
   },
 })
 
+const queryClient = useQueryClient()
+
 // Get the staticFrontendPlugin
 const staticFrontendPlugin = computed(() => {
   return props.plugins.find(plugin => plugin.infos.name == 'staticFrontend')
@@ -38,7 +40,7 @@ const staticFrontendPlugin = computed(() => {
 
 
 // Get the staticFrontendPluginClient
-const { data: staticFrontendPluginClient, isLoading: staticFrontendPluginClientLoading, isFetching: staticFrontendPluginClientFetching, isError: staticFrontendPluginClientIsError, error: staticFrontendPluginClientError, isSuccess: staticFrontendPluginClientLoaded } = useStaticFrontendPluginClient(props.contractAddress, staticFrontendPlugin.plugin)
+const { data: staticFrontendPluginClient, isLoading: staticFrontendPluginClientLoading, isFetching: staticFrontendPluginClientFetching, isError: staticFrontendPluginClientIsError, error: staticFrontendPluginClientError, isSuccess: staticFrontendPluginClientLoaded } = useStaticFrontendPluginClient(props.contractAddress, staticFrontendPlugin.value.plugin)
 
 
 // Form fields
@@ -68,7 +70,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     console.log(fileInfos)
   
     // Prepare the transaction to upload the files
-    const transactionsData = await props.staticFrontendPluginClient.prepareAddFilesTransactions(props.websiteVersionIndex, fileInfos);
+    const transactionsData = await staticFrontendPluginClient.value.prepareAddFilesTransactions(props.websiteVersionIndex, fileInfos);
     console.log(transactionsData);
 
     return transactionsData;
@@ -93,11 +95,11 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     addFileTransactionResults.value.push({status: 'pending'})
     addFileTransactionBeingExecutedIndex.value = index
 
-    const hash = await props.staticFrontendPluginClient.executeTransaction(transaction);
+    const hash = await staticFrontendPluginClient.value.executeTransaction(transaction);
     console.log(hash);
 
     // Wait for the transaction to be mined
-    return await props.staticFrontendPluginClient.waitForTransactionReceipt(hash);
+    return await staticFrontendPluginClient.value.waitForTransactionReceipt(hash);
   },
   scope: {
     // This scope will make the mutations run serially
