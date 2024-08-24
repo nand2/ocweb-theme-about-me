@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
-import { useStaticFrontendPluginClient, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/pluginStaticFrontendQueries.js';
+import { useStaticFrontendPluginClient, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/tanstack-vue.js';
 
 const props = defineProps({
   websiteVersion: {
