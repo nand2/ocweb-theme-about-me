@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     lib: {
-      entry: './src/components/HelloWorld.vue',
+      entry: './src/components/AdminPanel.vue',
       name: 'themeAboutMeAdmin0',
       formats: ['umd'],
       fileName: (format) => `admin.${format}.js`,
