@@ -1,8 +1,11 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
-import { useStaticFrontendPluginClient, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/tanstack-vue.js';
+import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/tanstack-vue.js';
+
+import PlusLgIcon from './Icons/PlusLgIcon.vue';
+import TrashIcon from './Icons/TrashIcon.vue';
 
 const props = defineProps({
   websiteVersion: {
@@ -25,8 +28,12 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  plugins: {
+  pluginsInfos: {
     type: Array,
+    required: true,
+  },
+  pluginInfos: {
+    type: Object,
     required: true,
   },
 })
@@ -35,16 +42,76 @@ const queryClient = useQueryClient()
 
 // Get the staticFrontendPlugin
 const staticFrontendPlugin = computed(() => {
-  return props.plugins.find(plugin => plugin.infos.name == 'staticFrontend')
+  return props.pluginsInfos.find(plugin => plugin.infos.name == 'staticFrontend')
 })
-
 
 // Get the staticFrontendPluginClient
 const { data: staticFrontendPluginClient, isLoading: staticFrontendPluginClientLoading, isFetching: staticFrontendPluginClientFetching, isError: staticFrontendPluginClientIsError, error: staticFrontendPluginClientError, isSuccess: staticFrontendPluginClientLoaded } = useStaticFrontendPluginClient(props.contractAddress, staticFrontendPlugin.value.plugin)
 
+// Get the staticFrontend
+const { data: staticFrontend, isLoading: staticFrontendLoading, isFetching: staticFrontendFetching, isError: staticFrontendIsError, error: staticFrontendError, isSuccess: staticFrontendLoaded } = useStaticFrontend(queryClient, props.contractAddress, props.chainId, staticFrontendPlugin.value.plugin, computed(() => props.websiteVersionIndex))
 
-// Form fields
-const name = ref("")
+// Get the existing config file infos
+const configFileInfos = computed(() => {
+  return staticFrontendLoaded.value ? staticFrontend.value.files.find(file => file.filePath == 'themes/about-me/config.json') : null
+})
+
+// Fetch the config file content
+const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, staticFrontendPlugin.value.plugin, props.websiteVersionIndex, computed(() => configFileInfos.value))
+
+// Decode and load the config
+const decodeConfigFileContent = (fileContent) => {
+  return fileContent ? JSON.parse(new TextDecoder().decode(fileContent)) : '';
+}
+const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : {
+  "title": "",
+  "subtitle": "",
+  "email": "",
+  "location": "",
+  "menu": [
+    {
+      "title": "Home",
+      "path": "/",
+      "markdownFile": null
+    },
+  ],
+  "externalLinks": []
+})
+// When the file content is fetched, set the text
+watch(fileContent, (newValue) => {
+  config.value = decodeConfigFileContent(newValue)
+});
+
+// Computed: Get the list of markdown files (ending by .md), ordered by folder then alphabetically
+const markdownFiles = computed(() => {
+  if (staticFrontend.value == null) {
+    return []
+  }
+
+  return staticFrontend.value.files.filter(file => file.filePath.endsWith('.md')).sort((a, b) => {
+    // Extract the folder and file name
+    const folderA = a.filePath.split('/').slice(0, -1).join('/')
+    const folderB = b.filePath.split('/').slice(0, -1).join('/')
+    const fileA = a.filePath.split('/').slice(-1)[0]
+    const fileB = b.filePath.split('/').slice(-1)[0]
+
+    // Compare the folders
+    if (folderA < folderB) {
+      return -1
+    } else if (folderA > folderB) {
+      return 1
+    }
+
+    // Compare the files
+    if (fileA < fileB) {
+      return -1
+    } else if (fileA > fileB) {
+      return 1
+    }
+  })
+})
+
+
 
 
 // Prepare the addition of files
@@ -57,7 +124,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
     addFileTransactionResults.value = []
 
     // Convert the text to a UInt8Array
-    const textData = JSON.stringify({name: name.value});
+    const textData = JSON.stringify(config.value, null, 4);
 
     // Prepare the files for upload
     const fileInfos = [{
@@ -134,10 +201,74 @@ const executePreparedAddFilesTransactions = async () => {
 </script>
 
 <template>
-  <div>
-    <div>
-      <label>Your name</label>
-      <input v-model="name" />
+  <div class="admin">
+    <div class="form-fields">
+      <div>
+        <label>Site title</label>
+        <input v-model="config.title" placeholder="Your name" />
+      </div>
+      <div>
+        <label>Site subtitle</label>
+        <input v-model="config.subtitle" placeholder="Short description" />
+      </div>
+
+      <div>
+        <label>Email <small>Optional</small></label>
+        <input v-model="config.email" placeholder="abcd@example.com" />
+      </div>
+
+      <div>
+        <label>Location <small>Optional</small></label>
+        <input v-model="config.location" placeholder="City, ..." />
+      </div>
+    </div>
+
+    <div class="menu">
+      <h3 style="margin-bottom: 0.3em; display: flex; gap: 0.4em; align-items:center;">
+        Menu
+        <a @click.stop.prevent="config.menu.push({title: '', path: '', markdownFile: null})" class="white" style="font-size: 0em;">
+          <PlusLgIcon />
+        </a>
+      </h3>
+
+      <div class="table-header">
+        <div>
+          Page
+        </div>
+        <div>
+          Title
+        </div>
+        <div>
+          Path
+        </div>
+        <div></div>
+      </div>
+
+      <div v-for="(menuItem, index) in config.menu" :key="index">
+        
+        <div class="table-row">
+          <div>
+            <select v-model="menuItem.markdownFile" :disabled="markdownFiles.length == 0">
+                <option :value="null">- Select a page -</option>
+                <option v-for="file in markdownFiles" :value="file.filePath">{{ file.filePath }}</option>
+            </select>
+            <div class="text-warning text-80" style="margin-top:0.5em;" v-if="markdownFiles.length == 0">
+              No pages available. Create pages in the "Pages" section.
+            </div>
+          </div>
+          <div>
+            <input v-model="menuItem.title" placeholder="Menu title" />
+          </div>
+          <div>
+            <input v-model="menuItem.path" placeholder="e.g. / (homepage), /publications, ..." />
+          </div>
+          <div style="line-height: 0em;">
+            <a @click.stop.prevent="config.menu.splice(index, 1)" class="white">
+              <TrashIcon />
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="prepareAddFilesIsError" class="mutation-error">
@@ -152,13 +283,57 @@ const executePreparedAddFilesTransactions = async () => {
       </span>
     </div>
 
-    <button @click="prepareAddFilesTransactions" :disabled="prepareAddFilesIsPending">Save</button>
+    <div class="buttons">
+      <button @click="prepareAddFilesTransactions" :disabled="prepareAddFilesIsPending">Save</button>
+    </div>
 
   </div>
 </template>
 
 <style scoped>
-.read-the-docs {
-  color: #888;
+.admin {
+  padding: 1em;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+label small {
+  font-size: 0.8em;
+  font-weight: normal;
+  color: var(--color-text-muted);
+}
+
+.form-fields {
+  margin-bottom: 1em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1em;
+}
+
+.form-fields input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.menu .table-header,
+.menu .table-row {
+  grid-template-columns: 1fr 1fr 1fr 1em;
+  align-items: center;
+}
+
+.table-row input,
+.table-row select {
+  width: 100%;
+  box-sizing: border-box
+}
+
+.buttons {
+  display: flex;
+  gap: 1em;
+  justify-content: right;
 }
 </style>
