@@ -12,13 +12,14 @@ export default defineConfig({
       fileName: (format) => `admin.${format}.js`,
     },
     rollupOptions: {
-      external: ['vue', '@tanstack/vue-query', '@wagmi/vue'],
+      external: ['vue', '@tanstack/vue-query', '@wagmi/vue', 'viem'],
       output: {
         assetFileNames: "admin.[ext]",
         globals: {
           vue: 'Vue',
           '@tanstack/vue-query': 'TanstackVueQuery',
           '@wagmi/vue': 'WagmiVue',
+          viem: 'Viem',
         },
       },
     },
