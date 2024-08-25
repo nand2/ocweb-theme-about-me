@@ -150,6 +150,13 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
   }
 })
 const prepareAddFilesTransactions = async () => {
+  // Menu entries: Path: Ensure they start with a /
+  config.value.menu.forEach(menuItem => {
+    if(menuItem.path.length > 0 && !menuItem.path.startsWith('/')) {
+      menuItem.path = '/' + menuItem.path;
+    }
+  })
+
   prepareAddFilesMutate()
 }
 
@@ -211,7 +218,9 @@ const executePreparedAddFilesTransactions = async () => {
         <label>Site subtitle</label>
         <input v-model="config.subtitle" placeholder="Short description" />
       </div>
+    </div>
 
+    <div class="form-fields">
       <div>
         <label>Email <small>Optional</small></label>
         <input v-model="config.email" placeholder="abcd@example.com" />
@@ -245,7 +254,6 @@ const executePreparedAddFilesTransactions = async () => {
       </div>
 
       <div v-for="(menuItem, index) in config.menu" :key="index">
-        
         <div class="table-row">
           <div>
             <select v-model="menuItem.markdownFile" :disabled="markdownFiles.length == 0">
@@ -268,6 +276,47 @@ const executePreparedAddFilesTransactions = async () => {
             </a>
           </div>
         </div>
+      </div>
+    </div>
+    <div v-if="config.menu.length == 0" class="text-muted" style="text-align: center; padding: 1em 0em;">
+      No menu entries
+    </div>
+
+    <div class="outgoing-links">
+      <h3 style="margin-bottom: 0.3em; display: flex; gap: 0.4em; align-items:center;">
+        External links
+        <a @click.stop.prevent="config.externalLinks.push({title: '', url: ''})" class="white" style="font-size: 0em;">
+          <PlusLgIcon />
+        </a>
+      </h3>
+
+      <div class="table-header">
+        <div>
+          Title
+        </div>
+        <div>
+          URL
+        </div>
+        <div></div>
+      </div>
+
+      <div v-for="(link, index) in config.externalLinks" :key="index">
+        <div class="table-row">
+          <div>
+            <input v-model="link.title" placeholder="Link title" />
+          </div>
+          <div>
+            <input v-model="link.url" placeholder="web3://example.eth, https://example.com, ..." />
+          </div>
+          <div style="line-height: 0em;">
+            <a @click.stop.prevent="config.externalLinks.splice(index, 1)" class="white">
+              <TrashIcon />
+            </a>
+          </div>
+        </div>
+      </div>
+      <div v-if="config.externalLinks.length == 0" class="text-muted" style="text-align: center; padding: 1em 0em;">
+        No external links
       </div>
     </div>
 
@@ -322,6 +371,16 @@ label small {
 .menu .table-header,
 .menu .table-row {
   grid-template-columns: 1fr 1fr 1fr 1em;
+  align-items: center;
+}
+
+.outgoing-links {
+  margin-bottom: 1em;
+}
+
+.outgoing-links .table-header,
+.outgoing-links .table-row {
+  grid-template-columns: 1fr 2fr 1em;
   align-items: center;
 }
 
