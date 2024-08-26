@@ -53,9 +53,6 @@ const renderedMarkdown = computed(() => {
 </template>
 
 <style scoped>
-.page {
-  flex: 1 1 500px;
-}
 
 .dot {
   display: inline-block;

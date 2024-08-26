@@ -52,7 +52,7 @@ body {
 
 @media (prefers-color-scheme: light) {
   :root {
-    --color-root-bg: #ffffff;
+    --color-root-bg: #f4f4f4;
     --color-text: #213547;
     --color-link-hover: #747bff;
   }

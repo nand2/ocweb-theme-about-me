@@ -3,19 +3,31 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 import './style.css'
 import App from './App.vue'
-import MarkdownPage from './components/MarkdownPage.vue'
+import Body from './components/Body.vue'
 
-
+// Theme config: Default values:
+let themeConfig = {
+  title: "<Your name>",
+  subtitle: "<Your short bio>",
+  email: "mail@example.com",
+  location: "Earth",
+  menu: [{title: 'Home', path: '/'}],
+  externalLinks: [],
+}
 // Fetch the config of the theme, located at /themes/about-me/config.json
-const themeConfig = await fetch('/themes/about-me/config.json')
-const themeConfigJson = await themeConfig.json()
+try {
+  const themeConfigJson = await fetch('/themes/about-me/config.json')
+  themeConfig = await themeConfigJson.json()
+} catch (e) {
+  console.log('Failed to fetch theme config, using the default one. Reason:', e)
+}
 
 // Create the router, based on the config above
-const routes = themeConfigJson.menu.map(page => {
+const routes = themeConfig.menu.map(page => {
   return {
     path: page.path,
-    component: MarkdownPage,
-    props: { page }
+    component: Body,
+    props: page.title && page.markdownFile ? { page } : {}
   }
 })
 const router = createRouter({
@@ -33,7 +45,7 @@ app.use(VueQueryPlugin, { queryClient })
 // Router
 app.use(router)
 // Inject theme config
-app.provide('themeConfig', themeConfigJson)
+app.provide('themeConfig', themeConfig)
 
 app.mount('#app')
 
