@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useQueryClient, useMutation } from '@tanstack/vue-query'
 
+import { useIsLocked } from 'ocweb/src/tanstack-vue.js';
 import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/tanstack-vue.js';
 
 import PlusLgIcon from './Icons/PlusLgIcon.vue';
@@ -40,6 +41,9 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 
+// Get the lock status
+const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
+
 // Get the staticFrontendPlugin
 const staticFrontendPlugin = computed(() => {
   return props.pluginsInfos.find(plugin => plugin.infos.name == 'staticFrontend')
@@ -57,7 +61,7 @@ const configFileInfos = computed(() => {
 })
 
 // Fetch the config file content
-const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, staticFrontendPlugin.value.plugin, props.websiteVersionIndex, computed(() => configFileInfos.value))
+const { data: fileContent, isLoading: fileContentLoading, isFetching: fileContentFetching, isError: fileContentIsError, error: fileContentError, isSuccess: fileContentLoaded } = useStaticFrontendFileContent(props.contractAddress, props.chainId, staticFrontendPlugin.value.plugin, computed(() => props.websiteVersionIndex), computed(() => configFileInfos.value))
 
 // Decode and load the config
 const decodeConfigFileContent = (fileContent) => {
@@ -197,7 +201,7 @@ const { isPending: addFilesIsPending, isError: addFilesIsError, error: addFilesE
     await queryClient.invalidateQueries({ queryKey: ['StaticFrontendPluginStaticFrontend', props.contractAddress, props.chainId, props.websiteVersionIndex] })
 
     // Refresh the content of the file
-    await invalidateStaticFrontendFileContentQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex, props.fileInfos)
+    await invalidateStaticFrontendFileContentQuery(queryClient, props.contractAddress, props.chainId, props.websiteVersionIndex, 'themes/about-me/config.json')
 
     // If this was the last transaction
     if(addFileTransactionBeingExecutedIndex.value == filesAdditionTransactions.value.length - 1) {
@@ -222,14 +226,14 @@ const executePreparedAddFilesTransactions = async () => {
     <div class="form-fields">
       <div>
         <label>Site title</label>
-        <input v-model="config.title" placeholder="Your name" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+        <input v-model="config.title" placeholder="Your name" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
         <div class="text-danger text-80 error-message" v-if="showFormErrors && config.title == ''">
           Required
         </div>
       </div>
       <div>
         <label>Site subtitle</label>
-        <input v-model="config.subtitle" placeholder="Short description" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+        <input v-model="config.subtitle" placeholder="Short description" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
         <div class="text-danger text-80 error-message" v-if="showFormErrors && config.subtitle == ''">
           Required
         </div>
@@ -239,19 +243,19 @@ const executePreparedAddFilesTransactions = async () => {
     <div class="form-fields">
       <div>
         <label>Email <small>Optional</small></label>
-        <input v-model="config.email" placeholder="abcd@example.com" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+        <input v-model="config.email" placeholder="abcd@example.com" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
       </div>
 
       <div>
         <label>Location <small>Optional</small></label>
-        <input v-model="config.location" placeholder="City, ..." :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+        <input v-model="config.location" placeholder="City, ..." :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
       </div>
     </div>
 
     <div class="menu">
       <h3 style="margin-bottom: 0.3em; display: flex; gap: 0.4em; align-items:center;">
         Menu
-        <a @click.stop.prevent="config.menu.push({title: '', path: '', markdownFile: null})" class="white" style="font-size: 0em;">
+        <a @click.stop.prevent="config.menu.push({title: '', path: '', markdownFile: null})" class="white" style="font-size: 0em;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
           <PlusLgIcon />
         </a>
       </h3>
@@ -272,7 +276,7 @@ const executePreparedAddFilesTransactions = async () => {
       <div v-for="(menuItem, index) in config.menu" :key="index">
         <div class="table-row">
           <div>
-            <select v-model="menuItem.markdownFile" :disabled="markdownFiles.length == 0 || prepareAddFilesIsPending || addFilesIsPending">
+            <select v-model="menuItem.markdownFile" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || markdownFiles.length == 0 || prepareAddFilesIsPending || addFilesIsPending">
                 <option :value="null">- Select a page -</option>
                 <option v-for="file in markdownFiles" :value="file.filePath">{{ file.filePath }}</option>
             </select>
@@ -281,12 +285,12 @@ const executePreparedAddFilesTransactions = async () => {
             </div>
           </div>
           <div>
-            <input v-model="menuItem.title" placeholder="Menu title" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+            <input v-model="menuItem.title" placeholder="Menu title" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
           </div>
           <div>
-            <input v-model="menuItem.path" placeholder="e.g. / (homepage), /publications, ..." :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+            <input v-model="menuItem.path" placeholder="e.g. / (homepage), /publications, ..." :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
           </div>
-          <div style="line-height: 0em;">
+          <div style="line-height: 0em;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
             <a @click.stop.prevent="config.menu.splice(index, 1)" class="white">
               <TrashIcon />
             </a>
@@ -305,7 +309,7 @@ const executePreparedAddFilesTransactions = async () => {
     <div class="outgoing-links">
       <h3 style="margin-bottom: 0.3em; display: flex; gap: 0.4em; align-items:center;">
         External links
-        <a @click.stop.prevent="config.externalLinks.push({title: '', url: ''})" class="white" style="font-size: 0em;">
+        <a @click.stop.prevent="config.externalLinks.push({title: '', url: ''})" class="white" style="font-size: 0em;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
           <PlusLgIcon />
         </a>
       </h3>
@@ -323,12 +327,12 @@ const executePreparedAddFilesTransactions = async () => {
       <div v-for="(link, index) in config.externalLinks" :key="index">
         <div class="table-row">
           <div>
-            <input v-model="link.title" placeholder="Link title" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+            <input v-model="link.title" placeholder="Link title" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
           </div>
           <div>
-            <input v-model="link.url" placeholder="web3://example.eth, https://example.com, ..." :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+            <input v-model="link.url" placeholder="web3://example.eth, https://example.com, ..." :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
           </div>
-          <div style="line-height: 0em;">
+          <div style="line-height: 0em;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
             <a @click.stop.prevent="config.externalLinks.splice(index, 1)" class="white">
               <TrashIcon />
             </a>
@@ -361,7 +365,7 @@ const executePreparedAddFilesTransactions = async () => {
     </div>
 
     <div class="buttons">
-      <button @click="prepareAddFilesTransactions" :disabled="prepareAddFilesIsPending">Save</button>
+      <button @click="prepareAddFilesTransactions" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">Save</button>
     </div>
 
   </div>
