@@ -74,13 +74,8 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
             return (statusCode, body, headers);
         }
 
-        // Serve the frontend : /* -> /frontend/*
-        string[] memory newResource = new string[](resource.length + 1);
-        newResource[0] = "frontend";
-        for (uint i = 0; i < resource.length; i++) {
-            newResource[i + 1] = resource[i];
-        }
-        (uint newStatusCode, string memory newBody, KeyValue[] memory newHeaders) = frontend.request(newResource, params);
+        // Serve the frontend : /* -> /*
+        (uint newStatusCode, string memory newBody, KeyValue[] memory newHeaders) = frontend.request(resource, params);
         if(newStatusCode == 200) {
             return (newStatusCode, newBody, newHeaders);
         }
