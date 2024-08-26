@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { WagmiPlugin } from '@wagmi/vue'
-import { config as wagmiConfig } from './wagmiConfig'
+import { config as wagmiConfig } from './wagmiConfig.js'
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query'
 
 const app = createApp(App)
