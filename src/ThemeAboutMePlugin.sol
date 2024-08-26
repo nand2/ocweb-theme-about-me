@@ -25,8 +25,9 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
     }
 
     function infos() external view returns (Infos memory) {
-        IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](1);
+        IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](2);
         dependencies[0] = staticFrontendPlugin;
+        dependencies[1] = ocWebAdminPlugin;
 
         AdminPanel[] memory adminPanels = new AdminPanel[](1);
         adminPanels[0] = AdminPanel({
@@ -43,7 +44,7 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
                 title: "Theme About Me",
                 subTitle: "A theme for presenting oneself",
                 author: "nand",
-                homepage: "",
+                homepage: "web3://ocweb.eth/",
                 dependencies: dependencies,
                 adminPanels: adminPanels
             });

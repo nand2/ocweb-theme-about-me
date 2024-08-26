@@ -22,6 +22,9 @@ try {
   console.log('Failed to fetch theme config, using the default one. Reason:', e)
 }
 
+// Set the title of the page to the title of the theme
+document.title = themeConfig.title
+
 // Create the router, based on the config above
 const routes = themeConfig.menu.map(page => {
   return {
