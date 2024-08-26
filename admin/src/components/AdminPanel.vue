@@ -111,8 +111,10 @@ const markdownFiles = computed(() => {
   })
 })
 
-
-
+const hasFormErrors = computed(() => {
+  return config.value.title == '' || config.value.subtitle == '' || config.value.menu.find(menuItem => menuItem.title == '' || menuItem.path == '' || menuItem.markdownFile == null) || config.value.externalLinks.find(link => link.title == '' || link.url == '')
+})
+const showFormErrors = ref(false)
 
 // Prepare the addition of files
 const filesAdditionTransactions = ref([])
@@ -150,12 +152,20 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
   }
 })
 const prepareAddFilesTransactions = async () => {
+  showFormErrors.value = false
+
   // Menu entries: Path: Ensure they start with a /
   config.value.menu.forEach(menuItem => {
     if(menuItem.path.length > 0 && !menuItem.path.startsWith('/')) {
       menuItem.path = '/' + menuItem.path;
     }
   })
+
+  // Validate the form
+  if(hasFormErrors.value) {
+    showFormErrors.value = true
+    return
+  }
 
   prepareAddFilesMutate()
 }
@@ -212,23 +222,29 @@ const executePreparedAddFilesTransactions = async () => {
     <div class="form-fields">
       <div>
         <label>Site title</label>
-        <input v-model="config.title" placeholder="Your name" />
+        <input v-model="config.title" placeholder="Your name" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+        <div class="text-danger text-80 error-message" v-if="showFormErrors && config.title == ''">
+          Required
+        </div>
       </div>
       <div>
         <label>Site subtitle</label>
-        <input v-model="config.subtitle" placeholder="Short description" />
+        <input v-model="config.subtitle" placeholder="Short description" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
+        <div class="text-danger text-80 error-message" v-if="showFormErrors && config.subtitle == ''">
+          Required
+        </div>
       </div>
     </div>
 
     <div class="form-fields">
       <div>
         <label>Email <small>Optional</small></label>
-        <input v-model="config.email" placeholder="abcd@example.com" />
+        <input v-model="config.email" placeholder="abcd@example.com" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
       </div>
 
       <div>
         <label>Location <small>Optional</small></label>
-        <input v-model="config.location" placeholder="City, ..." />
+        <input v-model="config.location" placeholder="City, ..." :disabled="prepareAddFilesIsPending || addFilesIsPending" />
       </div>
     </div>
 
@@ -256,7 +272,7 @@ const executePreparedAddFilesTransactions = async () => {
       <div v-for="(menuItem, index) in config.menu" :key="index">
         <div class="table-row">
           <div>
-            <select v-model="menuItem.markdownFile" :disabled="markdownFiles.length == 0">
+            <select v-model="menuItem.markdownFile" :disabled="markdownFiles.length == 0 || prepareAddFilesIsPending || addFilesIsPending">
                 <option :value="null">- Select a page -</option>
                 <option v-for="file in markdownFiles" :value="file.filePath">{{ file.filePath }}</option>
             </select>
@@ -265,16 +281,20 @@ const executePreparedAddFilesTransactions = async () => {
             </div>
           </div>
           <div>
-            <input v-model="menuItem.title" placeholder="Menu title" />
+            <input v-model="menuItem.title" placeholder="Menu title" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
           </div>
           <div>
-            <input v-model="menuItem.path" placeholder="e.g. / (homepage), /publications, ..." />
+            <input v-model="menuItem.path" placeholder="e.g. / (homepage), /publications, ..." :disabled="prepareAddFilesIsPending || addFilesIsPending" />
           </div>
           <div style="line-height: 0em;">
             <a @click.stop.prevent="config.menu.splice(index, 1)" class="white">
               <TrashIcon />
             </a>
           </div>
+        </div>
+        
+        <div class="text-danger text-80 error-message" v-if="showFormErrors && (menuItem.title == '' || menuItem.path == '' || menuItem.markdownFile == null)">
+          The page, title and path are required
         </div>
       </div>
     </div>
@@ -303,10 +323,10 @@ const executePreparedAddFilesTransactions = async () => {
       <div v-for="(link, index) in config.externalLinks" :key="index">
         <div class="table-row">
           <div>
-            <input v-model="link.title" placeholder="Link title" />
+            <input v-model="link.title" placeholder="Link title" :disabled="prepareAddFilesIsPending || addFilesIsPending" />
           </div>
           <div>
-            <input v-model="link.url" placeholder="web3://example.eth, https://example.com, ..." />
+            <input v-model="link.url" placeholder="web3://example.eth, https://example.com, ..." :disabled="prepareAddFilesIsPending || addFilesIsPending" />
           </div>
           <div style="line-height: 0em;">
             <a @click.stop.prevent="config.externalLinks.splice(index, 1)" class="white">
@@ -314,10 +334,18 @@ const executePreparedAddFilesTransactions = async () => {
             </a>
           </div>
         </div>
+
+        <div class="text-danger text-80 error-message" v-if="showFormErrors && (link.title == '' || link.url == '')">
+          The title and URL are required
+        </div>
       </div>
       <div v-if="config.externalLinks.length == 0" class="text-muted" style="text-align: center; padding: 1em 0em;">
         No external links
       </div>
+    </div>
+
+    <div v-if="hasFormErrors && showFormErrors" class="text-danger text-90">
+      Some fields are required
     </div>
 
     <div v-if="prepareAddFilesIsError" class="mutation-error">
@@ -368,6 +396,10 @@ label small {
   box-sizing: border-box;
 }
 
+.form-fields .error-message {
+  margin-top: 0.2em;
+}
+
 .menu .table-header,
 .menu .table-row {
   grid-template-columns: 1fr 1fr 1fr 1em;
@@ -390,9 +422,17 @@ label small {
   box-sizing: border-box
 }
 
+.menu .error-message {
+  margin-bottom: 0.5em;
+  margin-left: 0.75rem;
+  margin-right: 0.75rem;
+}
+
 .buttons {
   display: flex;
   gap: 1em;
   justify-content: right;
 }
+
+
 </style>
