@@ -83,7 +83,9 @@ const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value
 })
 // When the file content is fetched, set the text
 watch(fileContent, (newValue) => {
-  config.value = decodeConfigFileContent(newValue)
+  if(fileContentLoaded.value) {
+    config.value = decodeConfigFileContent(newValue)
+  }
 });
 
 // Computed: Get the list of markdown files (ending by .md), ordered by folder then alphabetically
