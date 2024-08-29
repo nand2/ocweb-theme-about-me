@@ -7,21 +7,22 @@ import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFile
 
 import PlusLgIcon from './Icons/PlusLgIcon.vue';
 import TrashIcon from './Icons/TrashIcon.vue';
+import { defaultConfig } from '../assets/defaultConfig';
 
 const props = defineProps({
-  websiteVersion: {
-    type: Object,
-    required: true
-  },
-  websiteVersionIndex: {
-    type: Number,
-    required: true,
-  },
   contractAddress: {
     type: String,
     required: true,
   },
   chainId: {
+    type: Number,
+    required: true,
+  },
+  websiteVersion: {
+    type: Object,
+    required: true
+  },
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -67,20 +68,7 @@ const { data: fileContent, isLoading: fileContentLoading, isFetching: fileConten
 const decodeConfigFileContent = (fileContent) => {
   return fileContent ? JSON.parse(new TextDecoder().decode(fileContent)) : '';
 }
-const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : {
-  "title": "",
-  "subtitle": "",
-  "email": "",
-  "location": "",
-  "menu": [
-    {
-      "title": "Home",
-      "path": "/",
-      "markdownFile": null
-    },
-  ],
-  "externalLinks": []
-})
+const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : defaultConfig)
 // When the file content is fetched, set the text
 watch(fileContent, (newValue) => {
   if(fileContentLoaded.value) {
@@ -136,7 +124,6 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
 
     // Prepare the files for upload
     const fileInfos = [{
-      // If existing file : Reuse same filePath, we rename after
       filePath: 'themes/about-me/config.json',
       size: textData.length,
       contentType: "application/json",
@@ -282,9 +269,6 @@ const executePreparedAddFilesTransactions = async () => {
                 <option :value="null">- Select a page -</option>
                 <option v-for="file in markdownFiles" :value="file.filePath">{{ file.filePath }}</option>
             </select>
-            <div class="text-warning text-80" style="margin-top:0.5em;" v-if="markdownFiles.length == 0">
-              No pages available. Create pages in the "Pages" section.
-            </div>
           </div>
           <div>
             <input v-model="menuItem.title" placeholder="Menu title" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
@@ -297,6 +281,10 @@ const executePreparedAddFilesTransactions = async () => {
               <TrashIcon />
             </a>
           </div>
+        </div>
+
+        <div class="text-warning text-80" style="margin-left:0.75rem;" v-if="markdownFiles.length == 0">
+          No pages available. Create pages in the "Pages" section.
         </div>
         
         <div class="text-danger text-80 error-message" v-if="showFormErrors && (menuItem.title == '' || menuItem.path == '' || menuItem.markdownFile == null)">

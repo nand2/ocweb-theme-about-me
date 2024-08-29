@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     lib: {
-      entry: './src/components/AdminPanel.vue',
-      name: 'themeAboutMeAdmin0',
+      entry: './src/library.js',
+      name: 'themeAboutMeAdminPanels',
       formats: ['umd'],
       fileName: (format) => `admin.${format}.js`,
     },

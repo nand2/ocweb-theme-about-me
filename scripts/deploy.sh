@@ -9,6 +9,7 @@ CHAIN_ID=${CHAIN_ID:-}
 OCWEBSITE_FACTORY_ADDRESS=${OCWEBSITE_FACTORY_ADDRESS:-}
 STATIC_FRONTEND_PLUGIN_ADDRESS=${STATIC_FRONTEND_PLUGIN_ADDRESS:-}
 OCWEB_ADMIN_PLUGIN_ADDRESS=${OCWEB_ADMIN_PLUGIN_ADDRESS:-}
+ETHERSCAN_API_KEY=${ETHERSCAN_API_KEY:-}
 if [ -z "$PRIVATE_KEY" ]; then
   echo "PRIVATE_KEY env var is not set"
   exit 1
@@ -31,6 +32,10 @@ if [ -z "$STATIC_FRONTEND_PLUGIN_ADDRESS" ]; then
 fi
 if [ -z "$OCWEB_ADMIN_PLUGIN_ADDRESS" ]; then
   echo "OCWEB_ADMIN_PLUGIN_ADDRESS env var is not set"
+  exit 1
+fi
+if [ -z "$ETHERSCAN_API_KEY" ]; then
+  echo "ETHERSCAN_API_KEY env var is not set"
   exit 1
 fi
 
@@ -70,7 +75,7 @@ npm run build
 # Upload the admin frontend
 PRIVATE_KEY=$PRIVATE_KEY \
 WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
-npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /admin/
+npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /themes/about-me/
 
 
 #
@@ -93,7 +98,11 @@ npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* / --exclude 'dist/pa
 # Build the plugin
 # 
 
-forge create --private-key $PRIVATE_KEY \
+FORGE_CREATE_OPTIONS=
+if [ "$CHAIN_ID" != "31337" ]; then
+  FORGE_CREATE_OPTIONS="--verify"
+fi
+forge create --private-key $PRIVATE_KEY $FORGE_CREATE_OPTIONS \
 --constructor-args $OCWEBSITE_ADDRESS $STATIC_FRONTEND_PLUGIN_ADDRESS $OCWEB_ADMIN_PLUGIN_ADDRESS \
 --rpc-url $RPC_URL \
 src/ThemeAboutMePlugin.sol:ThemeAboutMePlugin

@@ -12,6 +12,11 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
     IVersionableWebsitePlugin public staticFrontendPlugin;
     IVersionableWebsitePlugin public ocWebAdminPlugin;
 
+    struct Config {
+        string[] rootPath;
+    }
+    mapping(IVersionableWebsite => mapping(uint => Config)) private configs;
+
     constructor(IDecentralizedApp _frontend, IVersionableWebsitePlugin _staticFrontendPlugin, IVersionableWebsitePlugin _ocWebAdminPlugin) {
         frontend = _frontend;
         staticFrontendPlugin = _staticFrontendPlugin;
@@ -29,12 +34,18 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
         dependencies[0] = staticFrontendPlugin;
         dependencies[1] = ocWebAdminPlugin;
 
-        AdminPanel[] memory adminPanels = new AdminPanel[](1);
+        AdminPanel[] memory adminPanels = new AdminPanel[](2);
         adminPanels[0] = AdminPanel({
             title: "Theme About Me",
             url: "/themes/about-me/admin.umd.js",
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Primary
+        });
+        adminPanels[1] = AdminPanel({
+            title: "Theme About Me",
+            url: "/themes/about-me/admin.umd.js",
+            moduleForGlobalAdminPanel: ocWebAdminPlugin,
+            panelType: AdminPanelType.Secondary
         });
 
         return
@@ -62,26 +73,61 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
     )
         external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        // Serve the admin plugin : /themes/about-me/[admin.umd.js|admin.css] -> /admin/[admin.umd.js|admin.css]
-        if (resource.length == 3 && Strings.equal(resource[0], "themes") && Strings.equal(resource[1], "about-me") && (Strings.equal(resource[2], "admin.umd.js") || Strings.equal(resource[2], "admin.css"))) {
-
-            string[] memory newResource = new string[](2);
-            newResource[0] = "admin";
-            newResource[1] = resource[2];
-
-            (statusCode, body, headers) = frontend.request(newResource, params);
+        // Serve the admin parts : /themes/about-me/* -> /themes/about-me/*
+        if(resource.length >= 2 && Strings.equal(resource[0], "themes") && Strings.equal(resource[1], "about-me")) {
+            (statusCode, body, headers) = frontend.request(resource, params);
 
             return (statusCode, body, headers);
         }
 
-        // Serve the frontend : /* -> /*
-        (uint newStatusCode, string memory newBody, KeyValue[] memory newHeaders) = frontend.request(resource, params);
-        if(newStatusCode == 200) {
-            return (newStatusCode, newBody, newHeaders);
+        // Serve the frontend : Proxy /[config.rootPath]/* -> /*
+        Config memory config = configs[website][websiteVersionIndex];
+        if(resource.length >= config.rootPath.length) {
+            bool prefixMatch = true;
+            for(uint i = 0; i < config.rootPath.length; i++) {
+                if(Strings.equal(resource[i], config.rootPath[i]) == false) {
+                    prefixMatch = false;
+                    break;
+                }
+            }
+
+            if(prefixMatch) {
+                string[] memory newResource = new string[](resource.length - config.rootPath.length);
+                for(uint i = 0; i < resource.length - config.rootPath.length; i++) {
+                    newResource[i] = resource[i + config.rootPath.length];
+                }
+
+                (statusCode, body, headers) = frontend.request(newResource, params);
+
+                return (statusCode, body, headers);
+            }
         }
     }
 
     function copyFrontendSettings(IVersionableWebsite website, uint fromFrontendIndex, uint toFrontendIndex) public {
         require(address(website) == msg.sender);
+
+        Config storage config = configs[website][toFrontendIndex];
+        Config storage fromConfig = configs[website][fromFrontendIndex];
+
+        config.rootPath = fromConfig.rootPath;
+    }
+
+    function getConfig(IVersionableWebsite website, uint websiteVersionIndex) external view returns (Config memory) {
+        return configs[website][websiteVersionIndex];
+    }
+
+    function setConfig(IVersionableWebsite website, uint websiteVersionIndex, Config memory _config) external {
+        require(address(website) == msg.sender || website.owner() == msg.sender, "Not the owner");
+
+        require(website.isLocked() == false, "Website is locked");
+
+        require(websiteVersionIndex < website.getWebsiteVersionCount(), "Website version out of bounds");
+        IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
+        require(websiteVersion.locked == false, "Website version is locked");
+
+        Config storage config = configs[website][websiteVersionIndex];
+
+        config.rootPath = _config.rootPath;
     }
 }
