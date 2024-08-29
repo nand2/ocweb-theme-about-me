@@ -19,7 +19,7 @@ try {
   const themeConfigJson = await fetch('/themes/about-me/config.json')
   themeConfig = await themeConfigJson.json()
 } catch (e) {
-  console.log('Failed to fetch theme config, using the default one. Reason:', e)
+  console.debug('About me theme: Failed to fetch theme config, using the default one. Reason:', e)
 }
 
 // Set the title of the page to the title of the theme

@@ -54,11 +54,11 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
           </h3>
 
           <p>
-            Your website is an OCWebsite, which is a publishing platform with plugin support (themes, features, ...).
+            Your website is an OCWebsite : a base web3:// website with plugin support (themes, features, ...) and an admin interface.
           </p>
 
           <p>
-            You can configure your OCWebsite, and add/remove plugins by going to your <a href="/admin">admin section</a>.
+            You can configure your OCWebsite, add/remove plugins by going to your <a href="/admin">admin section</a>.
           </p>
         </div>
       </div>
