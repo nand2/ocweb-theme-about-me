@@ -35,7 +35,7 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
       </h2>
 
       <p>
-        Your website is a smart contract, accessible via the <a href="web3://web3url.eth"><code style="font-weight: bold;">web3://</code></a> protocol with a native browser, or via an HTTPS gateway.
+        Your website is a smart contract, accessible via the <a href="web3://web3url.eth" target="_blank"><code style="font-weight: bold;">web3://</code></a> protocol with a native browser, or via an HTTPS gateway.
       </p>
 
       <div v-if="variablesIsSuccess" class="web3Address">
@@ -58,7 +58,7 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
           </p>
 
           <p>
-            You can configure your OCWebsite, add/remove plugins by going to your <a href="/admin">admin section</a>.
+            You can configure your OCWebsite, add/remove plugins by going to your <a href="/admin/">admin section</a>.
           </p>
         </div>
       </div>
@@ -69,7 +69,7 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
       </h3>
 
       <p>
-        You are currently using the "About Me" theme plugin, which let you present yourself with some static pages, and links to external pages. Configure it in your <a href="/admin">admin section</a>.
+        You are currently using the "About Me" theme plugin, which let you present yourself with some static pages, and links to external pages. Configure it in your <a href="/admin/">admin section</a>.
       </p>
 
       
