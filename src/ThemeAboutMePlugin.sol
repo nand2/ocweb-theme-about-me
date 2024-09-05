@@ -34,19 +34,19 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
         dependencies[0] = staticFrontendPlugin;
         dependencies[1] = ocWebAdminPlugin;
 
-        AdminPanel[] memory adminPanels = new AdminPanel[](2);
+        AdminPanel[] memory adminPanels = new AdminPanel[](1);
         adminPanels[0] = AdminPanel({
-            title: "Theme About Me",
-            url: "/themes/about-me/admin.umd.js",
-            moduleForGlobalAdminPanel: ocWebAdminPlugin,
-            panelType: AdminPanelType.Primary
-        });
-        adminPanels[1] = AdminPanel({
             title: "Theme About Me",
             url: "/themes/about-me/admin.umd.js",
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Secondary
         });
+        // adminPanels[1] = AdminPanel({
+        //     title: "Theme About Me",
+        //     url: "/themes/about-me/admin.umd.js",
+        //     moduleForGlobalAdminPanel: ocWebAdminPlugin,
+        //     panelType: AdminPanelType.Secondary
+        // });
 
         return
             Infos({
