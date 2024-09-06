@@ -29,6 +29,14 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
             super.supportsInterface(interfaceId);
     }
 
+    uint public adminPanelUrlCacheKey = 0;
+    function bumpAdminPanelUrlCache() public /** No access control deemed necessary */ {
+        if(adminPanelUrlCacheKey == type(uint).max) {
+            adminPanelUrlCacheKey = 0;
+        }
+        adminPanelUrlCacheKey++;
+    }
+
     function infos() external view returns (Infos memory) {
         IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](2);
         dependencies[0] = staticFrontendPlugin;
@@ -37,7 +45,7 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
         AdminPanel[] memory adminPanels = new AdminPanel[](1);
         adminPanels[0] = AdminPanel({
             title: "Theme About Me",
-            url: "/themes/about-me/admin.umd.js",
+            url: string.concat("/themes/about-me/admin.umd.js?cacheKey=", Strings.toString(adminPanelUrlCacheKey)),
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Secondary
         });
