@@ -22,6 +22,7 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
   }
 });
 
+
 </script>
 
 <template>
@@ -43,22 +44,28 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
       </div>
 
       <p>
-        In short, <code style="font-weight: bold;">web3://</code> is like <code style="font-weight: bold;">https://</code>, but the blockchain is the server.
+        In short, <code style="font-weight: bold;">web3://</code> is like <code style="font-weight: bold;">https://</code>, but websites are smart contracts, and the blockchain is the server.
       </p>
+
+      <h3>
+        OCWebsite
+      </h3>
 
       <div class="ocwebsite-section">
         <img src="/logo.svg" class="logo" />
         <div>
-          <h3>
-            OCWebsite
-          </h3>
-
-          <p>
-            Your website is an OCWebsite : a base web3:// website with plugin support (themes, features, ...) and an admin interface.
+          <p style="margin-top: 0">
+            Your website is an OCWebsite : a <code style="font-weight: bold;">web3://</code> website prepackaged with a plugin system and an admin interface. It appears as a NFT in your wallet.
           </p>
 
           <p>
             You can configure your OCWebsite, add/remove plugins by going to your <a href="/admin/">admin section</a>.
+          </p>
+
+          <p style="text-align: center;">
+            <a href="web3://ocweb.eth" target="_blank" class="btn" style="font-size: 0.9em;">
+              Mint another OCWebsite at web3://ocweb.eth
+            </a>
           </p>
         </div>
       </div>
@@ -105,7 +112,7 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
   gap: 2em;
 }
 .ocwebsite-section img {
-  margin-top: 1.17em;
+  /* margin-top: 1.17em; */
 }
 
 @media (max-width: 800px) {
@@ -114,6 +121,8 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
     gap: 1em;
   }
 }
+
+
 
 
 </style>

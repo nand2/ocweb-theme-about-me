@@ -14,6 +14,12 @@
   --color-link: #646cff;
   --color-link-hover: #535bf2;
 
+  --color-button-bg: #1a1a1a;
+  --color-button-secondary-bg: #1e1e1e;
+  --color-button: var(--color-text);
+  --color-button-disabled: #888;
+  --color-button-hover-border: #79581e;
+
   color-scheme: light dark;
   color: var(--color-text);
   background-color: var(--color-root-bg);
@@ -68,6 +74,30 @@ body {
   color: var(--color-text-danger);
 }
 
+
+button, a.btn {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.5em 1em;
+  font-size: 1em;
+  font-family: inherit;
+  background-color: var(--color-button-bg);
+  color: var(--color-button);
+  transition: border-color 0.25s;
+}
+a.btn {
+  display: inline-block;
+}
+button[disabled], a.btn[disabled] {
+  cursor: default;
+  color: var(--color-button-disabled);
+}
+button:not([disabled]), a.btn:not([disabled]) {
+  cursor: pointer;
+}
+button:not([disabled]):hover, a.btn:not([disabled]):hover {
+  border-color: var(--color-button-hover-border);
+}
 
 
 /** Markdown entry content. Aiming to look like github */
