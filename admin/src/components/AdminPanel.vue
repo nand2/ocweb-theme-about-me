@@ -256,9 +256,9 @@ const executePreparedAddFilesTransactions = async () => {
     <div class="menu">
       <h3 style="margin-bottom: 0.3em; display: flex; gap: 0.4em; align-items:center;">
         Menu
-        <a @click.stop.prevent="config.menu.push({title: '', path: '', markdownFile: null})" class="white" style="font-size: 0em;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
-          <PlusLgIcon />
-        </a>
+        <button @click.stop.prevent="config.menu.push({title: '', path: '', markdownFile: null})" class="sm" style="font-size: 0.7em; display: flex; gap: 0.3em; align-items: center;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
+          <PlusLgIcon /> Add
+        </button>
       </h3>
 
       <div class="table-header">
@@ -295,7 +295,7 @@ const executePreparedAddFilesTransactions = async () => {
           </div>
         </div>
 
-        <div class="text-warning text-80" style="margin-left:0.75rem;" v-if="markdownFiles.length == 0">
+        <div class="text-warning text-80" style="margin-left:0.75rem;" v-if="markdownFiles.length == 0 && index == config.menu.length - 1">
           No pages available. Create pages in the "Pages" section.
         </div>
         
@@ -311,9 +311,9 @@ const executePreparedAddFilesTransactions = async () => {
     <div class="outgoing-links">
       <h3 style="margin-bottom: 0.3em; display: flex; gap: 0.4em; align-items:center;">
         External links
-        <a @click.stop.prevent="config.externalLinks.push({title: '', url: ''})" class="white" style="font-size: 0em;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
-          <PlusLgIcon />
-        </a>
+        <button @click.stop.prevent="config.externalLinks.push({title: '', url: ''})" class="sm" style="font-size: 0.7em; display: flex; gap: 0.3em; align-items: center;" v-if="isLockedLoaded && isLocked == false && websiteVersion.locked == false">
+          <PlusLgIcon /> Add
+        </button>
       </h3>
 
       <div class="table-header">
