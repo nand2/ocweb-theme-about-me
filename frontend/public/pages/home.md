@@ -21,6 +21,8 @@ function code() {
 }
 ```
 
+`code`
+
 > Blockquote
 
 Some **bold** and *italic*

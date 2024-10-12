@@ -17,7 +17,7 @@ const themeConfig = inject('themeConfig')
       {{ themeConfig.subtitle }}
     </div>
 
-    <div class="entries">
+    <div class="entries" v-if="themeConfig.email || themeConfig.location">
       <div v-if="themeConfig.email">
         <EnvelopeIcon />
         <a :href="'mailto:' + themeConfig.email">{{ themeConfig.email }}</a>

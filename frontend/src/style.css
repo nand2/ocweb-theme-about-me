@@ -30,6 +30,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-root-bg: #f4f4f4;
+    --color-text: #213547;
+    --color-link-hover: #747bff;
+    --color-light-bg: #cccccc;
+  }
+}
+
 a {
   font-weight: 500;
   color: var(--color-link);
@@ -56,13 +65,6 @@ body {
   padding: 2rem;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-root-bg: #f4f4f4;
-    --color-text: #213547;
-    --color-link-hover: #747bff;
-  }
-}
 
 /** 
  * EVM browser specific workaround: 

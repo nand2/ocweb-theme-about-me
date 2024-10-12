@@ -7,6 +7,7 @@ import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFile
 
 import PlusLgIcon from './Icons/PlusLgIcon.vue';
 import TrashIcon from './Icons/TrashIcon.vue';
+import SaveIcon from './Icons/SaveIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
 import AdminSettingsPanel from './AdminSettingsPanel.vue';
 
@@ -106,8 +107,19 @@ const markdownFiles = computed(() => {
   })
 })
 
+// Determine if the menu has duplicate paths
+const menuHasDuplicatePaths = computed(() => {
+  const menuItemPaths = config.value.menu.map(menuItem => menuItem.path)
+  return (new Set(menuItemPaths)).size !== menuItemPaths.length
+})
+
+// Determine if the menu miss an homepage
+const menuMissHomepage = computed(() => {
+  return config.value.menu.find(menuItem => menuItem.path == '/') == null
+})
+
 const hasFormErrors = computed(() => {
-  return config.value.title == '' || config.value.subtitle == '' || config.value.menu.find(menuItem => menuItem.title == '' || menuItem.path == '' || menuItem.markdownFile == null) || config.value.externalLinks.find(link => link.title == '' || link.url == '')
+  return config.value.title == '' || config.value.menu.find(menuItem => menuItem.title == '' || menuItem.path == '' || menuItem.markdownFile == null) || config.value.externalLinks.find(link => link.title == '' || link.url == '') || menuHasDuplicatePaths.value || menuMissHomepage.value
 })
 const showFormErrors = ref(false)
 
@@ -147,6 +159,7 @@ const { isPending: prepareAddFilesIsPending, isError: prepareAddFilesIsError, er
 })
 const prepareAddFilesTransactions = async () => {
   showFormErrors.value = false
+  addFilesReset()
 
   // Menu entries: Path: Ensure they start with a /
   config.value.menu.forEach(menuItem => {
@@ -233,11 +246,8 @@ const executePreparedAddFilesTransactions = async () => {
         </div>
       </div>
       <div>
-        <label>Site subtitle</label>
+        <label>Site subtitle <small>Optional</small></label>
         <input v-model="config.subtitle" placeholder="Short description" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
-        <div class="text-danger text-80 error-message" v-if="showFormErrors && config.subtitle == ''">
-          Required
-        </div>
       </div>
     </div>
 
@@ -304,6 +314,12 @@ const executePreparedAddFilesTransactions = async () => {
         </div>
       </div>
     </div>
+    <div v-if="showFormErrors && menuHasDuplicatePaths" class="text-danger text-80 error-message" style="margin-left:0.75rem;">
+      The menu has duplicate paths
+    </div>
+    <div v-if="showFormErrors && config.menu.length > 0 && menuMissHomepage" class="text-danger text-80 error-message" style="margin-left:0.75rem;">
+      The menu is missing an homepage
+    </div>
     <div v-if="config.menu.length == 0" class="text-muted" style="text-align: center; padding: 1em 0em;">
       No menu entries
     </div>
@@ -351,7 +367,7 @@ const executePreparedAddFilesTransactions = async () => {
     </div>
 
     <div v-if="hasFormErrors && showFormErrors" class="text-danger text-90">
-      Some fields are required
+      Please fix the errors in the form
     </div>
 
     <div v-if="prepareAddFilesIsError" class="mutation-error">
@@ -367,7 +383,15 @@ const executePreparedAddFilesTransactions = async () => {
     </div>
 
     <div class="buttons">
-      <button @click="prepareAddFilesTransactions" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">Save</button>
+      <button @click="prepareAddFilesTransactions" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
+        <span v-if="prepareAddFilesIsPending || addFilesIsPending">
+          <SaveIcon class="anim-pulse" />
+          Saving in progress...
+        </span>
+        <span v-else>
+          Save
+        </span>
+      </button>
     </div>
 
   </div>
