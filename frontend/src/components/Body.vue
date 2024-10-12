@@ -101,10 +101,15 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
   padding: 0.8em 1.3em;
   font-size: 1.0em;
   border: 1px solid #555;
-  background-color: #1a1a1a;
+  background-color: var(--color-button-bg);
   margin-bottom: 1em;
   word-break: break-all;
   text-align: center;
+}
+@media (prefers-color-scheme: light) {
+  .web3Address {
+    border-color: #ccc;
+  }
 }
 
 .ocwebsite-section {

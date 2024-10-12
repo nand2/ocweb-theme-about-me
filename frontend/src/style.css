@@ -33,9 +33,12 @@
 @media (prefers-color-scheme: light) {
   :root {
     --color-root-bg: #f4f4f4;
+    --color-light-bg: #cccccc;
+
     --color-text: #213547;
     --color-link-hover: #747bff;
-    --color-light-bg: #cccccc;
+    
+    --color-button-bg: #aaa;
   }
 }
 
