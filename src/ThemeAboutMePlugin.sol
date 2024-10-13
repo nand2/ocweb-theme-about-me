@@ -6,6 +6,7 @@ import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
 import "ocweb/contracts/src/interfaces/IVersionableWebsite.sol";
 import "ocweb/contracts/src/interfaces/IDecentralizedApp.sol";
+import "./library/LibStrings.sol";
 
 contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
     IDecentralizedApp public frontend;
@@ -106,6 +107,31 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
                 }
 
                 (statusCode, body, headers) = frontend.request(newResource, params);
+
+                // If there is a "Cache-control: evm-events" header, we will replace it with 
+                // "Cache-control: evm-events=<addressOfFrontend><newResourcePath>"
+                // We only include <newResourcePath> if config.rootPath is not empty, otherwise the
+                // path of the cache clearing event will be the same than the path of the URL
+                // That way, we indicate that the contract emitting the cache clearing events is 
+                // the frontend website
+                for(uint i = 0; i < headers.length; i++) {
+                    if(LibStrings.compare(headers[i].key, "Cache-control") && LibStrings.compare(headers[i].value, "evm-events")) {
+                        string memory path = "";
+                        string memory cacheDirectiveValueQuote = "";
+                        if(config.rootPath.length > 0) {
+                            cacheDirectiveValueQuote = "\"";
+                            path = "/";
+                            for(uint j = 0; j < newResource.length; j++) {
+                                path = string.concat(path, newResource[j]);
+                                if(j < newResource.length - 1) {
+                                    path = string.concat(path, "/");
+                                }
+                            }
+                        }
+
+                        headers[i].value = string.concat("evm-events=", cacheDirectiveValueQuote, LibStrings.toHexString(address(frontend)), path, cacheDirectiveValueQuote);
+                    }
+                }
 
                 return (statusCode, body, headers);
             }
