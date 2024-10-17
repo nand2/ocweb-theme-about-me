@@ -30,14 +30,6 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
             super.supportsInterface(interfaceId);
     }
 
-    uint public adminPanelUrlCacheKey = 0;
-    function bumpAdminPanelUrlCache() public /** No access control deemed necessary */ {
-        if(adminPanelUrlCacheKey == type(uint).max) {
-            adminPanelUrlCacheKey = 0;
-        }
-        adminPanelUrlCacheKey++;
-    }
-
     function infos() external view returns (Infos memory) {
         IVersionableWebsitePlugin[] memory dependencies = new IVersionableWebsitePlugin[](2);
         dependencies[0] = staticFrontendPlugin;
@@ -46,7 +38,7 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
         AdminPanel[] memory adminPanels = new AdminPanel[](1);
         adminPanels[0] = AdminPanel({
             title: "Theme About Me",
-            url: string.concat("/themes/about-me/admin.umd.js?cacheKey=", Strings.toString(adminPanelUrlCacheKey)),
+            url: "/themes/about-me/admin.umd.js",
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Secondary
         });
@@ -85,6 +77,16 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
         // Serve the admin parts : /themes/about-me/* -> /themes/about-me/*
         if(resource.length >= 2 && Strings.equal(resource[0], "themes") && Strings.equal(resource[1], "about-me")) {
             (statusCode, body, headers) = frontend.request(resource, params);
+
+            // If there is a "Cache-control: evm-events" header, we will replace it with 
+            // "Cache-control: evm-events=<addressOfFrontend>"
+            // That way, we indicate that the contract emitting the cache clearing events is 
+            // the frontend website
+            for(uint i = 0; i < headers.length; i++) {
+                if(LibStrings.compare(headers[i].key, "Cache-control") && LibStrings.compare(headers[i].value, "evm-events")) {
+                    headers[i].value = string.concat("evm-events=", LibStrings.toHexString(address(frontend)));
+                }
+            }
 
             return (statusCode, body, headers);
         }
