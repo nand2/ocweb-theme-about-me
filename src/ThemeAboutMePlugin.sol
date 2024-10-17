@@ -60,7 +60,7 @@ contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
         return
             Infos({
                 name: "themeAboutMe",
-                version: "0.1.0",
+                version: "0.1.1",
                 title: "Theme About Me",
                 subTitle: "A theme for presenting oneself",
                 author: "nand",
