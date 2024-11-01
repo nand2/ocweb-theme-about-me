@@ -47,7 +47,7 @@ then
 fi
 
 # Compute the plugin root folder (which is the parent folder of this script)
-PLUGIN_ROOT=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
+ROOT_FOLDER=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
 
 #
@@ -63,35 +63,31 @@ OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0
 
 
 #
-# Build and upload the admin frontend
+# Build and upload the admin frontend and the main frontend
 #
 
 # Go to the admin frontend folder
-cd $PLUGIN_ROOT/admin
-
+cd $ROOT_FOLDER/admin
 # Build the admin frontend
 npm run build
+
+# Go to the frontend folder
+cd $ROOT_FOLDER/frontend
+# Build the frontend
+npm run build
+
+# Make a temporary folder where we mix both admin and frontend
+cd $ROOT_FOLDER
+rm -Rf $ROOT_FOLDER/dist
+mkdir -p dist
+mkdir -p dist/themes/about-me
+cp -R admin/dist/* dist/themes/about-me
+cp -R frontend/dist/index.html frontend/dist/logo.svg frontend/dist/assets dist
 
 # Upload the admin frontend
 PRIVATE_KEY=$PRIVATE_KEY \
 WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
-npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /themes/about-me/
-
-
-#
-# Build and upload the frontend
-#
-
-# Go to the frontend folder
-cd $PLUGIN_ROOT/frontend
-
-# Build the frontend
-npm run build
-
-# Upload the frontend
-PRIVATE_KEY=$PRIVATE_KEY \
-WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
-npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* / --exclude 'dist/pages/*' --exclude 'dist/custom/*' --exclude 'dist/themes/about-me/*' --exclude 'dist/variables.json'
+npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /
 
 
 #
