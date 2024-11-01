@@ -68,7 +68,8 @@ const { data: fileContent, isLoading: fileContentLoading, isFetching: fileConten
 
 // Decode and load the config
 const decodeConfigFileContent = (fileContent) => {
-  return fileContent ? JSON.parse(new TextDecoder().decode(fileContent)) : '';
+  const decodedConfig = fileContent ? JSON.parse(new TextDecoder().decode(fileContent)) : {};
+  return { ...defaultConfig, ...decodedConfig };
 }
 const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : defaultConfig)
 // When the file content is fetched, set the text
@@ -105,6 +106,15 @@ const markdownFiles = computed(() => {
       return 1
     }
   })
+})
+
+// Get the list of existing CSS files
+const existingCssFiles = computed(() => {
+  if(staticFrontend.value == null) {
+    return [];
+  }
+
+  return staticFrontend.value.files.filter(file => file.filePath.endsWith('.css')).sort((a, b) => a.filePath.localeCompare(b.filePath));
 })
 
 // Determine if the menu has duplicate paths
@@ -260,6 +270,17 @@ const executePreparedAddFilesTransactions = async () => {
       <div>
         <label>Location <small>Optional</small></label>
         <input v-model="config.location" placeholder="City, ..." :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
+      </div>
+
+      <div>
+        <label>Advanced: Custom CSS <small>Optional</small></label>
+        <select v-model="config.userCssFile" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
+          <option :value="null">- Select an existing CSS file -</option>
+          <option v-for="cssFile in existingCssFiles" :key="cssFile.filePath" :value="cssFile.filePath">{{ cssFile.filePath }}</option>
+        </select>
+        <div class="text-muted" style="font-size: 0.7em;">
+          Activate the developer mode and upload a CSS file in the "Files" section to use it here.
+        </div>
       </div>
     </div>
 
@@ -421,7 +442,7 @@ label small {
   gap: 1em;
 }
 
-.form-fields input {
+.form-fields input, .form-fields select {
   width: 100%;
   box-sizing: border-box;
 }

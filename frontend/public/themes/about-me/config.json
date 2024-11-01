@@ -17,12 +17,21 @@
   ],
   "externalLinks": [
     {
-      "title": "Github",
-      "url": "web3://xxx.eth/xxx"
+      "title": "OCWeb.eth (with web3://)",
+      "url": "web3://ocweb.eth"
     },
     {
-      "title": "Twitter",
+      "title": "OCWeb.eth (without web3://)",
+      "url": "ocweb.eth"
+    },
+    {
+      "title": "Twitter (with https://)",
       "url": "https://twitter.com/xxx"
+    },
+    {
+      "title": "Twitter (without https://)",
+      "url": "twitter.com/xxx"
     }
-  ]
+  ],
+  "userCssFile": "custom/user.css"
 }

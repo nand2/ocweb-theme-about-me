@@ -13,6 +13,7 @@ let themeConfig = {
   location: "Earth",
   menu: [{title: 'Home', path: '/'}],
   externalLinks: [],
+  userCssFile: null,
 }
 // Fetch the config of the theme, located at /themes/about-me/config.json
 try {
@@ -37,6 +38,14 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes: routes
 })
+
+// If the user has a custom CSS file, load it
+if (themeConfig.userCssFile) {
+  const cssLink = document.createElement('link')
+  cssLink.rel = 'stylesheet'
+  cssLink.href = themeConfig.userCssFile
+  document.head.appendChild(cssLink)
+}
 
 
 // Create the vue app

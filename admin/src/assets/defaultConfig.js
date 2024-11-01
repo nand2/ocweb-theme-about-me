@@ -10,5 +10,6 @@ export const defaultConfig = {
       "markdownFile": null
     },
   ],
-  "externalLinks": []
+  "externalLinks": [],
+  "userCssFile": null,
 };

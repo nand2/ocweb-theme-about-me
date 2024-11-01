@@ -5,6 +5,20 @@ import GeoAltIcon from '../icons/GeoAltIcon.vue';
 
 const themeConfig = inject('themeConfig')
 
+const ensureUrlProtocol = (url) => {
+  // If the URL does not start with [a-z0-9]+://, add https://
+  if (!url.match(/^[a-z0-9]+:\/\//)) {
+    // If the URL starts with [a-z0-9]+\.eth, or an ethereum hex address, add web3://
+    if (url.match(/^[a-z0-9]+\.eth/) || url.match(/^0x[a-fA-F0-9]{40}$/)) {
+      return 'web3://' + url;
+    }
+    else {
+      return 'https://' + url;
+    }
+  }
+  return url;
+}
+
 </script>
 
 <template>
@@ -37,7 +51,7 @@ const themeConfig = inject('themeConfig')
     <hr v-if="themeConfig.externalLinks.length > 0" />
 
     <div class="external-links" v-if="themeConfig.externalLinks.length > 0">
-      <a v-for="externalLink in themeConfig.externalLinks" :href="externalLink.url" target="_blank">{{ externalLink.title }}</a>
+      <a v-for="externalLink in themeConfig.externalLinks" :href="ensureUrlProtocol(externalLink.url)" target="_blank">{{ externalLink.title }}</a>
     </div>
     
   </div>

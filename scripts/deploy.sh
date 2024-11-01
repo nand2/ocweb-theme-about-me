@@ -91,7 +91,7 @@ npm run build
 # Upload the frontend
 PRIVATE_KEY=$PRIVATE_KEY \
 WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
-npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* / --exclude 'dist/pages/*' --exclude 'dist/themes/about-me/*' --exclude 'dist/variables.json'
+npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* / --exclude 'dist/pages/*' --exclude 'dist/custom/*' --exclude 'dist/themes/about-me/*' --exclude 'dist/variables.json'
 
 
 #
