@@ -4,6 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "dependencies": {
-    "ocweb": "^0.0.1"
+    "ocweb": "^0.0.4"
   }
 }

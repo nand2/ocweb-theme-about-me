@@ -98,9 +98,9 @@ FORGE_CREATE_OPTIONS=
 if [ "$CHAIN_ID" != "31337" ]; then
   FORGE_CREATE_OPTIONS="--verify"
 fi
-forge create --private-key $PRIVATE_KEY $FORGE_CREATE_OPTIONS \
---constructor-args $OCWEBSITE_ADDRESS $STATIC_FRONTEND_PLUGIN_ADDRESS $OCWEB_ADMIN_PLUGIN_ADDRESS \
+forge create --broadcast --private-key $PRIVATE_KEY $FORGE_CREATE_OPTIONS \
 --rpc-url $RPC_URL \
-src/ThemeAboutMePlugin.sol:ThemeAboutMePlugin
+src/ThemeAboutMePlugin.sol:ThemeAboutMePlugin \
+--constructor-args $OCWEBSITE_ADDRESS $STATIC_FRONTEND_PLUGIN_ADDRESS $OCWEB_ADMIN_PLUGIN_ADDRESS \
 
 

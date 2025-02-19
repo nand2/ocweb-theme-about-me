@@ -4,8 +4,8 @@ pragma solidity ^0.8.13;
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 
-import "ocweb/contracts/src/interfaces/IVersionableWebsite.sol";
-import "ocweb/contracts/src/interfaces/IDecentralizedApp.sol";
+import "ocweb/src/interfaces/IVersionableWebsite.sol";
+import "ocweb/src/interfaces/IDecentralizedApp.sol";
 import "./library/LibStrings.sol";
 
 contract ThemeAboutMePlugin is ERC165, IVersionableWebsitePlugin {
