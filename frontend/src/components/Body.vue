@@ -22,6 +22,24 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
   }
 });
 
+// Computed property to get the self address chain id from variables
+const selfAddressChainId = computed(() => {
+  let result = null;
+
+  if (variables.value && variables.value.self) {
+    const urlParts = variables.value.self.split(':');
+    // 0xabcd1234...:12345
+    if (urlParts.length === 2) {
+      result =  urlParts[1];
+    }
+    // Default : mainnet
+    else {
+      result = 1;
+    }
+  }
+
+  return result;
+});
 
 </script>
 
@@ -59,7 +77,13 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
           </p>
 
           <p>
-            You can configure your OCWebsite, add/remove plugins by going to your <a href="/admin/">admin section</a>.
+            You can configure your OCWebsite, add/remove plugins by going to 
+            <span v-if="selfAddressChainId != 1">
+              your <a href="/admin/">admin section</a>.
+            </span>
+            <span v-else>
+              <a href="web3://ocweb.eth/" target="_blank">web3://ocweb.eth</a>.
+            </span>
           </p>
 
           <p style="text-align: center;">
@@ -76,7 +100,13 @@ const { isSuccess: variablesIsSuccess, data: variables } = useQuery({
       </h3>
 
       <p>
-        You are currently using the "About Me" theme plugin, which let you present yourself with some static pages, and links to external pages. Configure it in your <a href="/admin/">admin section</a>.
+        You are currently using the "About Me" theme plugin, which let you present yourself with some static pages, and links to external pages. Configure it in 
+        <span v-if="selfAddressChainId != 1">
+          your <a href="/admin/">admin section</a>.
+        </span>
+        <span v-else>
+          <a href="web3://ocweb.eth/" target="_blank">web3://ocweb.eth</a>.
+        </span>
       </p>
 
       
