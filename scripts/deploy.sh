@@ -46,6 +46,12 @@ then
     exit
 fi
 
+# Non-hardhat chain: Ask for confirmation
+if [ "$CHAIN_ID" != "31337" ]; then
+  echo "Please confirm that you want to deploy on chain $CHAIN_ID"
+  read -p "Press enter to continue"
+fi
+
 # Compute the plugin root folder (which is the parent folder of this script)
 ROOT_FOLDER=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
